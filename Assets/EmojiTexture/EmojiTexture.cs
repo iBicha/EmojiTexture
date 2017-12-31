@@ -22,20 +22,38 @@ public class EmojiTexture {
             return text;
         }
         set{
-            if(value != text){
+            if (value != text)
+            {
                 text = value;
 #if UNITY_IOS && !UNITY_EDITOR
                 _render(text, buffer, texture.width, texture.height);
+                isbyteBufferDirty = true;
                 texture.LoadRawTextureData(buffer, bufferSize);
                 texture.Apply();
 #endif
             }
         }
     }
+
+    public byte[] ByteBuffer{
+        get{
+            if(isbyteBufferDirty || byteBuffer == null){
+                if(buffer != IntPtr.Zero && bufferSize>0){
+                    Marshal.Copy(buffer, byteBuffer, 0, bufferSize);
+                    isbyteBufferDirty = false;
+                }
+            }
+            return byteBuffer;
+        }
+    }
+
     private Texture2D texture;
     private string text;
     private IntPtr buffer;
     private int bufferSize;
+
+    private byte[] byteBuffer;
+    private bool isbyteBufferDirty;
 
     public EmojiTexture() : this(null) { }
 
