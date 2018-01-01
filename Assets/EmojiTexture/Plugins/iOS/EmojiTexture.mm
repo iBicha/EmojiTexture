@@ -2,17 +2,17 @@
 
 extern "C" {
     
-    unsigned char * _alloc(int size)
+    unsigned char * EmojiTexture_alloc(int size)
     {
         return (unsigned char*) calloc(size, sizeof(unsigned char));
     }
     
-    void _free(unsigned char * buffer)
+    void EmojiTexture_free(unsigned char * buffer)
     {
         free(buffer);
     }
     
-    void _render(const char* text, unsigned char * buffer , int width, int height)
+    void EmojiTexture_render(const char* text, unsigned char * buffer , int width, int height)
     {
         NSUInteger bytesPerPixel = 4;
         NSUInteger bytesPerRow = bytesPerPixel * width;

@@ -4,29 +4,33 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-public class EmojiTexture {
+public class EmojiTexture
+{
 
 #if UNITY_IOS && !UNITY_EDITOR
     [DllImport("__Internal")]
-    private static extern IntPtr _alloc(int size);
+    private static extern IntPtr EmojiTexture_alloc(int size);
 
     [DllImport("__Internal")]
-    private static extern void _free(IntPtr buffer);
+    private static extern void EmojiTexture_free(IntPtr buffer);
 
     [DllImport("__Internal")]
-    private static extern void _render(string text, IntPtr buffer, int width, int height);
+    private static extern void EmojiTexture_render(string text, IntPtr buffer, int width, int height);
 #endif
 
-    public string Text {
-        get {
+    public string Text
+    {
+        get
+        {
             return text;
         }
-        set{
+        set
+        {
             if (value != text)
             {
                 text = value;
 #if UNITY_IOS && !UNITY_EDITOR
-                _render(text, buffer, texture.width, texture.height);
+                EmojiTexture_render(text, buffer, texture.width, texture.height);
                 isbyteBufferDirty = true;
                 texture.LoadRawTextureData(buffer, bufferSize);
                 texture.Apply();
@@ -35,10 +39,14 @@ public class EmojiTexture {
         }
     }
 
-    public byte[] ByteBuffer{
-        get{
-            if(isbyteBufferDirty || byteBuffer == null){
-                if(buffer != IntPtr.Zero && bufferSize>0){
+    public byte[] ByteBuffer
+    {
+        get
+        {
+            if (isbyteBufferDirty || byteBuffer == null)
+            {
+                if (buffer != IntPtr.Zero && bufferSize > 0)
+                {
                     Marshal.Copy(buffer, byteBuffer, 0, bufferSize);
                     isbyteBufferDirty = false;
                 }
@@ -65,12 +73,18 @@ public class EmojiTexture {
 
     public EmojiTexture(int width, int height) : this(null, width, height) { }
 
-    public EmojiTexture(string text, int width, int height){
+    public EmojiTexture(string text, int width, int height)
+    {
 
         texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
 #if UNITY_IOS && !UNITY_EDITOR
         bufferSize = width * height * 4;
-        buffer = _alloc(bufferSize);
+        buffer = EmojiTexture_alloc(bufferSize);
+#else
+        bufferSize = 0;
+        buffer = IntPtr.Zero;
+        byteBuffer = null;
+        isbyteBufferDirty = false;
 #endif
         Text = text;
     }
@@ -79,7 +93,7 @@ public class EmojiTexture {
     {
 #if UNITY_IOS && !UNITY_EDITOR
         if(buffer != IntPtr.Zero)
-            _free(buffer);
+        EmojiTexture_free(buffer);
 #endif
     }
 
