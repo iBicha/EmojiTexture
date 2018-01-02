@@ -1,5 +1,5 @@
 # EmojiTexture
-A Unity plugin to render Emojis ☺ ❤ 🍆 🍑 to a texture. Currently for iOS only.
+A Unity plugin to render Emojis ☺ ❤ 🍆 🍑 to a texture. Currently for iOS and Android only.
 
 ## Preview
 <img src="https://raw.github.com/iBicha/EmojiTexture/master/preview.gif">
