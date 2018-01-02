@@ -46,9 +46,9 @@ public class EmojiTexture
                 texture.LoadRawTextureData(buffer, bufferSize);
                 texture.Apply();
 #elif UNITY_ANDROID && !UNITY_EDITOR
-                byteBuffer = EmojiTextureClass.CallStatic<byte[]>("render", text, texture.width, texture.height);
-                isbyteBufferDirty = false;
-                texture.LoadRawTextureData(byteBuffer);
+                EmojiTextureClass.CallStatic("render", text, wrappedByteBuffer, texture.width, texture.height);
+                isbyteBufferDirty = true;
+                texture.LoadRawTextureData(buffer, bufferSize);
                 texture.Apply();
 #endif
             }
@@ -74,6 +74,7 @@ public class EmojiTexture
     private Texture2D texture;
     private string text;
     private IntPtr buffer;
+    private AndroidJavaObject wrappedByteBuffer;
     private int bufferSize;
 
     private byte[] byteBuffer;
@@ -96,6 +97,11 @@ public class EmojiTexture
 #if UNITY_IOS && !UNITY_EDITOR
         bufferSize = width * height * 4;
         buffer = EmojiTexture_alloc(bufferSize);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+        bufferSize = width * height * 4;
+        wrappedByteBuffer = new AndroidJavaObject("com.ibicha.emojitexture.WrappedByteBuffer",bufferSize);
+        AndroidJavaObject directByteBuffer = wrappedByteBuffer.Get<AndroidJavaObject>("buffer");
+        buffer = new IntPtr(directByteBuffer.Call<long>("address"));
 #else
         bufferSize = 0;
         buffer = IntPtr.Zero;
