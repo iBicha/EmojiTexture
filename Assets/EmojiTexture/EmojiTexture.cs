@@ -16,7 +16,18 @@ public class EmojiTexture
 
     [DllImport("__Internal")]
     private static extern void EmojiTexture_render(string text, IntPtr buffer, int width, int height);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+    private static AndroidJavaClass _EmojiTextureClass;
+    private static AndroidJavaClass EmojiTextureClass {
+        get {
+            if(_EmojiTextureClass == null){
+                _EmojiTextureClass = new AndroidJavaClass("com.ibicha.emojitexture.EmojiTexture");
+            }
+            return _EmojiTextureClass;
+        }
+    }
 #endif
+
 
     public string Text
     {
@@ -33,6 +44,11 @@ public class EmojiTexture
                 EmojiTexture_render(text, buffer, texture.width, texture.height);
                 isbyteBufferDirty = true;
                 texture.LoadRawTextureData(buffer, bufferSize);
+                texture.Apply();
+#elif UNITY_ANDROID && !UNITY_EDITOR
+                byteBuffer = EmojiTextureClass.CallStatic<byte[]>("render", text, texture.width, texture.height);
+                isbyteBufferDirty = false;
+                texture.LoadRawTextureData(byteBuffer);
                 texture.Apply();
 #endif
             }
