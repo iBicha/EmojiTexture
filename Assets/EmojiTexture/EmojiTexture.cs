@@ -121,7 +121,7 @@ public class EmojiTexture
 
     static public implicit operator Texture(EmojiTexture emojiTexture)
     {
-        return emojiTexture.texture;
+        return emojiTexture == null ? null : emojiTexture.texture;
     }
 
 }
