@@ -6,6 +6,11 @@ A Unity plugin to render Emojis ☺ ❤ 🍆 🍑 to a texture. Currently for iO
 
 
 ## Usage
+As simple as
+```csharp
+material.mainTexture = new EmojiTexture("❤");
+```
+Or
 ```csharp
 public class EmojiTextureExample : MonoBehaviour {
 
