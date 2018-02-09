@@ -92,7 +92,8 @@ public class EmojiTexture
 
     public EmojiTexture(string text, int width, int height)
     {
-
+        width = Mathf.Clamp(width, 8, 256);
+        height = Mathf.Clamp(height, 8, 256);
         texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
 #if UNITY_IOS && !UNITY_EDITOR
         bufferSize = width * height * 4;
