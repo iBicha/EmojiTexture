@@ -9,12 +9,6 @@ public class EmojiTexture
 
 #if UNITY_IOS && !UNITY_EDITOR
     [DllImport("__Internal")]
-    private static extern IntPtr EmojiTexture_alloc(int size);
-
-    [DllImport("__Internal")]
-    private static extern void EmojiTexture_free(IntPtr buffer);
-
-    [DllImport("__Internal")]
     private static extern void EmojiTexture_render(string text, IntPtr buffer, int width, int height);
 #elif UNITY_ANDROID && !UNITY_EDITOR
     private static AndroidJavaClass _EmojiTextureClass;
@@ -97,7 +91,7 @@ public class EmojiTexture
         texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
 #if UNITY_IOS && !UNITY_EDITOR
         bufferSize = width * height * 4;
-        buffer = EmojiTexture_alloc(bufferSize);
+        buffer = Marshal.AllocHGlobal(bufferSize);
 #elif UNITY_ANDROID && !UNITY_EDITOR
         bufferSize = width * height * 4;
         wrappedByteBuffer = new AndroidJavaObject("com.ibicha.emojitexture.WrappedByteBuffer",bufferSize);
@@ -116,7 +110,7 @@ public class EmojiTexture
     {
 #if UNITY_IOS && !UNITY_EDITOR
         if(buffer != IntPtr.Zero)
-        EmojiTexture_free(buffer);
+            Marshal.FreeHGlobal(buffer);
 #endif
     }
 
