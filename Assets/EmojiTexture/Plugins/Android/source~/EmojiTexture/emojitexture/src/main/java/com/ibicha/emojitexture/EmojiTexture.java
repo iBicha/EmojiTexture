@@ -11,6 +11,8 @@ import android.text.TextPaint;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
+import java.nio.ByteBuffer;
+
 /**
  * Created by ibicha on 2018-01-01.
  */
@@ -21,7 +23,7 @@ public class EmojiTexture {
     private static final int DEFAULT_MAX_TEXT_SIZE = 999;
     private static final float DEFAULT_PRECISION = 0.5f;
 
-    static void render(String text, WrappedByteBuffer wrappedByteBuffer, int width, int height){
+    static void render(String text, ByteBuffer byteBuffer, int width, int height){
         TextPaint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setTextAlign(Paint.Align.CENTER);
 
@@ -45,8 +47,8 @@ public class EmojiTexture {
         canvas.drawText(text, width/2, height/2 - (textBounds.bottom + textBounds.top) / 2.0f, textPaint);
 
         //bitmap to buffer
-        wrappedByteBuffer.buffer.rewind();
-        bitmap.copyPixelsToBuffer(wrappedByteBuffer.buffer);
+        byteBuffer.rewind();
+        bitmap.copyPixelsToBuffer(byteBuffer);
 
     }
 

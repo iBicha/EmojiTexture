@@ -22,7 +22,10 @@ public class EmojiTexture
     }
 #endif
 
-
+    /// <summary>
+    /// Get or set the text of the emoji. Usually a one character string representing the emoji.
+    /// </summary>
+    /// <value>Emoji string</value>
     public string Text
     {
         get
@@ -34,31 +37,35 @@ public class EmojiTexture
             if (value != text)
             {
                 text = value;
+                //Rendering
 #if UNITY_IOS && !UNITY_EDITOR
                 EmojiTexture_render(text, buffer, texture.width, texture.height);
-                isbyteBufferDirty = true;
-                texture.LoadRawTextureData(buffer, bufferSize);
-                texture.Apply();
 #elif UNITY_ANDROID && !UNITY_EDITOR
-                EmojiTextureClass.CallStatic("render", text, wrappedByteBuffer, texture.width, texture.height);
-                isbyteBufferDirty = true;
+                EmojiTextureClass.CallStatic("render", text, jByteBuffer, texture.width, texture.height);
+#endif
+                //Copy pixels to texture
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+                isByteBufferDirty = true;
                 texture.LoadRawTextureData(buffer, bufferSize);
                 texture.Apply();
 #endif
             }
         }
     }
-
+    /// <summary>
+    /// Copies the pixels from the native buffer and returns a byte array in the RGBA32 format.
+    /// </summary>
+    /// <value>The byte buffer.</value>
     public byte[] ByteBuffer
     {
         get
         {
-            if (isbyteBufferDirty || byteBuffer == null)
+            if (isByteBufferDirty || byteBuffer == null)
             {
                 if (buffer != IntPtr.Zero && bufferSize > 0)
                 {
                     Marshal.Copy(buffer, byteBuffer, 0, bufferSize);
-                    isbyteBufferDirty = false;
+                    isByteBufferDirty = false;
                 }
             }
             return byteBuffer;
@@ -68,11 +75,11 @@ public class EmojiTexture
     private Texture2D texture;
     private string text;
     private IntPtr buffer;
-    private AndroidJavaObject wrappedByteBuffer;
+    private AndroidJavaObject jByteBuffer;
     private int bufferSize;
 
     private byte[] byteBuffer;
-    private bool isbyteBufferDirty;
+    private bool isByteBufferDirty;
 
     public EmojiTexture() : this(null) { }
 
@@ -89,26 +96,26 @@ public class EmojiTexture
         width = Mathf.Clamp(width, 8, 256);
         height = Mathf.Clamp(height, 8, 256);
         texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
-#if UNITY_IOS && !UNITY_EDITOR
-        bufferSize = width * height * 4;
-        buffer = Marshal.AllocHGlobal(bufferSize);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-        bufferSize = width * height * 4;
-        wrappedByteBuffer = new AndroidJavaObject("com.ibicha.emojitexture.WrappedByteBuffer",bufferSize);
-        AndroidJavaObject directByteBuffer = wrappedByteBuffer.Get<AndroidJavaObject>("buffer");
-        buffer = new IntPtr(directByteBuffer.Call<long>("address"));
-#else
+
         bufferSize = 0;
         buffer = IntPtr.Zero;
         byteBuffer = null;
-        isbyteBufferDirty = false;
+        isByteBufferDirty = false;
+
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+        bufferSize = width * height * 4;
+        buffer = Marshal.AllocHGlobal(bufferSize);
 #endif
+#if UNITY_ANDROID && !UNITY_EDITOR
+        jByteBuffer = new AndroidJavaObject("java.nio.DirectByteBuffer", buffer.ToInt64(), bufferSize);
+#endif
+
         Text = text;
     }
 
     ~EmojiTexture()
     {
-#if UNITY_IOS && !UNITY_EDITOR
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
         if(buffer != IntPtr.Zero)
             Marshal.FreeHGlobal(buffer);
 #endif
