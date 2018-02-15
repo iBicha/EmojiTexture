@@ -104,7 +104,7 @@ public class TMProEmojiAsset
         if(currentEmojiIndex >= SHEET_TILES * SHEET_TILES)
         {
             var newSheet = CreateTMP_SpriteAsset();
-            currentEmojiAsset.fallbackSpriteAssets.Add(newSheet);
+            rootEmojiAsset.fallbackSpriteAssets.Add(newSheet);
             currentEmojiAsset = newSheet;
             currentEmojiIndex = 0;
         }
