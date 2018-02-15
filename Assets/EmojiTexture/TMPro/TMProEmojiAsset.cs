@@ -66,9 +66,14 @@ public class TMProEmojiAsset
             string emoji = match.Value;
 
             int spriteIndex = -1;
-            int unicode = emoji[0];
 
-            if(emoji.Length == 2)
+            int unicode = 0;
+
+            if (emoji.Length == 1)
+            {
+                unicode = emoji[0];
+            }
+            else
             {
                 unicode = char.ConvertToUtf32(emoji[0], emoji[1]);
             }
@@ -76,6 +81,7 @@ public class TMProEmojiAsset
             TMP_SpriteAsset spriteAsset = TMP_SpriteAsset.SearchFallbackForSprite(rootEmojiAsset, unicode, out spriteIndex);
             if(spriteAsset == null)
             {
+                //As an optimization, render only when the emoji is a new one
                 emojiTexture.Text = emoji;
                 PushSprite(unicode);
             }
