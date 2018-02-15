@@ -33,3 +33,5 @@ sysinfo.txt
 *.apk
 *.unitypackage
 iOS
+Assets/TextMesh Pro/
+Assets/TextMesh Pro.meta

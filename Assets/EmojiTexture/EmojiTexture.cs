@@ -146,7 +146,7 @@ public class EmojiTexture
 #endif
     }
 
-    static public implicit operator Texture(EmojiTexture emojiTexture)
+    static public implicit operator Texture2D(EmojiTexture emojiTexture)
     {
         return emojiTexture == null ? null : emojiTexture.texture;
     }
