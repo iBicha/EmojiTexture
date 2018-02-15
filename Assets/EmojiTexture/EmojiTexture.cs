@@ -64,10 +64,12 @@ public class EmojiTexture
     {
         get
         {
-            if (isByteBufferDirty || byteBuffer == null)
+            if (isByteBufferDirty)
             {
                 if (buffer != IntPtr.Zero && bufferSize > 0)
                 {
+                    if (byteBuffer == null)
+                        byteBuffer = new byte[bufferSize];
                     Marshal.Copy(buffer, byteBuffer, 0, bufferSize);
                     isByteBufferDirty = false;
                 }
