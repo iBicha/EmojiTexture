@@ -57,6 +57,25 @@ public class EmojiTexture
     }
 
     /// <summary>
+    /// Get or set the unicode character of the emoji
+    /// </summary>
+    public int Unicode
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(text))
+                return 0;
+            if (text.Length == 1)
+                return text[0];
+            return char.ConvertToUtf32(text[0], text[1]);
+        }
+        set
+        {
+            Text = char.ConvertFromUtf32(value);
+        }
+    }
+
+    /// <summary>
     /// Copies the pixels from the native buffer and returns a byte array in the RGBA32 format.
     /// </summary>
     /// <value>The byte buffer.</value>
