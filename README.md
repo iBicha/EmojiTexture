@@ -28,7 +28,7 @@ var bytes = emojiTexture.ByteBuffer;
 emojiTexture.Unicode = 0x1F60A; //😊 Smiling Face With Smiling Eyes
 
 ```
-## TextMesh Pro support
+## TextMesh Pro support (Experimental)
 [TextMesh Pro](https://assetstore.unity.com/packages/essentials/beta-projects/textmesh-pro-84126) already supports emojis as sprites, but they need to be prepared beforehand, which makes it troublesome in terms of build size (and also a lot of manual work), if you want to support as many emojis as possible.
 ## Setup
 - Import TextMesh Pro from the [Asset Store](https://assetstore.unity.com/packages/essentials/beta-projects/textmesh-pro-84126)
