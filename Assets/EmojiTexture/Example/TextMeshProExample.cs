@@ -10,12 +10,14 @@ namespace iBicha.TMPro
     public class TextMeshProExample : MonoBehaviour, IPointerClickHandler
     {
 #if TMPRO_EMOJIS
-        public TextMeshProUGUI label;
+        private TextMeshProUGUI label;
 #endif
 
         private void Start()
         {
-#if !TMPRO_EMOJIS
+#if TMPRO_EMOJIS
+            label = GetComponent<TextMeshProUGUI>();
+#else
             Debug.LogWarning("EmojiTexture for TextMesh Pro is not active, please add 'TMPRO_EMOJIS' to the Scripting Define Symbols in the Player Settings.");
 #endif
         }
