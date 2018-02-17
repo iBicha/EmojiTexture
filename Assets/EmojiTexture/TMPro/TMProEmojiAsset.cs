@@ -15,6 +15,7 @@ public class TMProEmojiAsset
     private static TMP_SpriteAsset currentEmojiAsset;
     private static int currentEmojiIndex;
 
+    private static bool canCopyTextures;
     private static EmojiTexture emojiTexture;
 
     public static void HookTMP(TMP_Text tmp_Text)
@@ -28,14 +29,16 @@ public class TMProEmojiAsset
         if (tmp_Text.spriteAsset.fallbackSpriteAssets == null)
             tmp_Text.spriteAsset.fallbackSpriteAssets = new List<TMP_SpriteAsset>();
 
-        if(rootEmojiAsset == null)
+        if (rootEmojiAsset == null)
         {
             rootEmojiAsset = CreateTMP_SpriteAsset();
             currentEmojiAsset = rootEmojiAsset;
             currentEmojiIndex = 0;
+
+            canCopyTextures = SystemInfo.copyTextureSupport != UnityEngine.Rendering.CopyTextureSupport.None;
         }
 
-        if(emojiTexture == null)
+        if (emojiTexture == null)
         {
             emojiTexture = new EmojiTexture(EMOJI_SIZE);
             emojiTexture.SanitizeText = false;
@@ -79,7 +82,7 @@ public class TMProEmojiAsset
             }
 
             TMP_SpriteAsset spriteAsset = TMP_SpriteAsset.SearchFallbackForSprite(rootEmojiAsset, unicode, out spriteIndex);
-            if(spriteAsset == null)
+            if (spriteAsset == null)
             {
                 //As an optimization, render only when the emoji is a new one
                 emojiTexture.Text = emoji;
@@ -101,7 +104,7 @@ public class TMProEmojiAsset
 
     private static void PushSprite(int unicode)
     {
-        if(currentEmojiIndex >= SHEET_TILES * SHEET_TILES)
+        if (currentEmojiIndex >= SHEET_TILES * SHEET_TILES)
         {
             var newSheet = CreateTMP_SpriteAsset();
             rootEmojiAsset.fallbackSpriteAssets.Add(newSheet);
@@ -112,9 +115,20 @@ public class TMProEmojiAsset
         int row = currentEmojiIndex % SHEET_TILES;
         int column = currentEmojiIndex / SHEET_TILES;
 
-        Graphics.CopyTexture(emojiTexture, 0, 0, 0, 0, EMOJI_SIZE, EMOJI_SIZE,
-                             currentEmojiAsset.spriteSheet, 0, 0, row * EMOJI_SIZE,
-                             (SHEET_SIZE) - ((column + 1) * EMOJI_SIZE));
+        if (canCopyTextures)
+        {
+            Graphics.CopyTexture(emojiTexture, 0, 0, 0, 0, EMOJI_SIZE, EMOJI_SIZE,
+                                 currentEmojiAsset.spriteSheet, 0, 0, row * EMOJI_SIZE,
+                                 (SHEET_SIZE) - ((column + 1) * EMOJI_SIZE));
+        }
+        else
+        {
+            //If we can't copy on the GPU, we copy on the CPU
+            var pixels = ((Texture2D)emojiTexture).GetPixels32(0);
+            ((Texture2D)currentEmojiAsset.spriteSheet).SetPixels32(
+                row * EMOJI_SIZE, (SHEET_SIZE) - ((column + 1) * EMOJI_SIZE), EMOJI_SIZE, EMOJI_SIZE, pixels, 0);
+            ((Texture2D)currentEmojiAsset.spriteSheet).Apply();
+        }
 
         TMP_Sprite tmp_Sprite = new TMP_Sprite();
 
