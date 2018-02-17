@@ -16,6 +16,7 @@ public class TMProEmojiAsset
     private static int currentEmojiIndex;
 
     private static bool canCopyTextures;
+    private static bool textureNeedsApply;
     private static EmojiTexture emojiTexture;
 
     public static void HookTMP(TMP_Text tmp_Text)
@@ -31,11 +32,11 @@ public class TMProEmojiAsset
 
         if (rootEmojiAsset == null)
         {
+            canCopyTextures = SystemInfo.copyTextureSupport != UnityEngine.Rendering.CopyTextureSupport.None;
+
             rootEmojiAsset = CreateTMP_SpriteAsset();
             currentEmojiAsset = rootEmojiAsset;
             currentEmojiIndex = 0;
-
-            canCopyTextures = SystemInfo.copyTextureSupport != UnityEngine.Rendering.CopyTextureSupport.None;
         }
 
         if (emojiTexture == null)
@@ -89,14 +90,29 @@ public class TMProEmojiAsset
                 PushSprite(unicode);
             }
         }
+        //If the texture has unsaved changes, we apply them here
+        //And make it non readable if it is full
+        if(textureNeedsApply){
+            var makeNoLongerReadable = currentEmojiIndex == SHEET_TILES * SHEET_TILES;
+            ((Texture2D)currentEmojiAsset.spriteSheet).Apply(false, makeNoLongerReadable);
+            textureNeedsApply = false;
+        }
     }
 
     private static TMP_SpriteAsset CreateTMP_SpriteAsset()
     {
+        var texture = new Texture2D(SHEET_SIZE, SHEET_SIZE, TextureFormat.RGBA32, false);
+        if (canCopyTextures)
+        {
+            //If we can copy textures on the GPU, we make it
+            //non readable to free up the RAM copy
+            //TODO: can we create a non readable texture in the first place?
+            texture.Apply(false,true);
+        }
         var spriteAsset = ScriptableObject.CreateInstance<TMP_SpriteAsset>();
         spriteAsset.fallbackSpriteAssets = new List<TMP_SpriteAsset>();
         spriteAsset.spriteInfoList = new List<TMP_Sprite>();
-        spriteAsset.spriteSheet = new Texture2D(SHEET_SIZE, SHEET_SIZE, TextureFormat.RGBA32, false);
+        spriteAsset.spriteSheet = texture;
         spriteAsset.material = new Material(Shader.Find("TextMeshPro/Sprite"));
         spriteAsset.material.mainTexture = spriteAsset.spriteSheet;
         return spriteAsset;
@@ -127,7 +143,13 @@ public class TMProEmojiAsset
             var pixels = ((Texture2D)emojiTexture).GetPixels32(0);
             ((Texture2D)currentEmojiAsset.spriteSheet).SetPixels32(
                 row * EMOJI_SIZE, (SHEET_SIZE) - ((column + 1) * EMOJI_SIZE), EMOJI_SIZE, EMOJI_SIZE, pixels, 0);
-            ((Texture2D)currentEmojiAsset.spriteSheet).Apply();
+
+            //Free CPU copy of the texture (mark as non readable) if it's full
+            var makeNoLongerReadable = currentEmojiIndex == SHEET_TILES * SHEET_TILES -1;
+            if(makeNoLongerReadable){
+                ((Texture2D)currentEmojiAsset.spriteSheet).Apply(false, makeNoLongerReadable);
+            }
+            textureNeedsApply = !makeNoLongerReadable;
         }
 
         TMP_Sprite tmp_Sprite = new TMP_Sprite();
