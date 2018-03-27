@@ -10,5 +10,10 @@ namespace iBicha.Github
         {
             yield return GithubHelper.SetGithubEmoji(emojiTexture, text);
         }
-    }
+
+        public static IEnumerator SetGithubEmoji(this EmojiTexture emojiTexture, int unicode)
+        {
+            yield return GithubHelper.SetGithubEmoji(emojiTexture, unicode);
+        }
+}
 }
