@@ -76,6 +76,6 @@ Few pointers to consider:
 - Currently cleaning up unused emojis is not yet supported. This will be added in the future.
 
 ## Known issues.
-- While the native emoji renderer tries to estimate the correct rendering, Github emojis and TMP both have trouble with complex emojis (such as flags, emojis with skintones, etc). These will be addressed in the future.
-- Some rendering issues
+- While the native emoji renderer (Android/iOS) tries to estimate the correct rendering, Github emojis and TMP both have trouble with complex emojis (such as flags, emojis with skintones, etc). These will be addressed in the future, as there is room for improvement.
+- Some rendering issues are due to how TMP works, because it scans for unicode characters, and we get to feed it sprites. This needs to be fixed on TMP's side.
 
