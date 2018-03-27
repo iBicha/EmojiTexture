@@ -23,9 +23,23 @@ public class EmojiTexture {
     private static final int DEFAULT_MAX_TEXT_SIZE = 999;
     private static final float DEFAULT_PRECISION = 0.5f;
 
-    static void render(String text, ByteBuffer byteBuffer, int width, int height){
+    static int render(String text, ByteBuffer byteBuffer, int width, int height, boolean sanitize){
         TextPaint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setTextAlign(Paint.Align.CENTER);
+
+        if(text == null)
+            text = "";
+
+        if(sanitize && text.length() > 0){
+            Rect bounds = new Rect();
+            for (int i = text.length(); i > 1 ; i--) {
+                textPaint.getTextBounds(text,0, i, bounds);
+                if((float)bounds.width()/(float)bounds.height() < 1.2){
+                    text = text.substring(0, i);
+                    break;
+                }
+            }
+        }
 
         Resources r = Resources.getSystem();
         DisplayMetrics displayMetrics = r.getDisplayMetrics();
@@ -33,7 +47,6 @@ public class EmojiTexture {
         float fontSize = getAutofitTextSize(text, textPaint,
                 width, 1, DEFAULT_MIN_TEXT_SIZE, DEFAULT_MAX_TEXT_SIZE, DEFAULT_PRECISION,
                 displayMetrics);
-
 
         textPaint.setTextSize(fontSize);
 
@@ -50,12 +63,14 @@ public class EmojiTexture {
         byteBuffer.rewind();
         bitmap.copyPixelsToBuffer(byteBuffer);
 
+        return text.length();
     }
 
     //https://github.com/grantland/android-autofittextview/blob/master/library/src/main/java/me/grantland/widget/AutofitHelper.java#L141
     private static float getAutofitTextSize(CharSequence text, TextPaint paint,
                                             float targetWidth, int maxLines, float low, float high, float precision,
                                             DisplayMetrics displayMetrics) {
+
         float mid = (low + high) / 2.0f;
         int lineCount = 1;
         StaticLayout layout = null;
