@@ -29,12 +29,6 @@ namespace iBicha.TMPro
             if (tmp_Text == null)
                 return;
 
-            if (tmp_Text.spriteAsset == null)
-                tmp_Text.spriteAsset = TMP_SpriteAsset.defaultSpriteAsset;
-
-            if (tmp_Text.spriteAsset.fallbackSpriteAssets == null)
-                tmp_Text.spriteAsset.fallbackSpriteAssets = new List<TMP_SpriteAsset>();
-
             if (rootEmojiAsset == null)
             {
                 canCopyTextures = SystemInfo.copyTextureSupport != UnityEngine.Rendering.CopyTextureSupport.None;
@@ -49,17 +43,32 @@ namespace iBicha.TMPro
                 emojiTexture = new EmojiTexture(EMOJI_SIZE);
             }
 
-            if (!tmp_Text.spriteAsset.fallbackSpriteAssets.Contains(rootEmojiAsset))
+            if (tmp_Text.spriteAsset == null)
             {
-                tmp_Text.spriteAsset.fallbackSpriteAssets.Add(rootEmojiAsset);
+                tmp_Text.spriteAsset = rootEmojiAsset;
+            }
+            else if(tmp_Text.spriteAsset != rootEmojiAsset)
+            {
+                if (tmp_Text.spriteAsset.fallbackSpriteAssets == null)
+                    tmp_Text.spriteAsset.fallbackSpriteAssets = new List<TMP_SpriteAsset>();
+
+                if (!tmp_Text.spriteAsset.fallbackSpriteAssets.Contains(rootEmojiAsset))
+                    tmp_Text.spriteAsset.fallbackSpriteAssets.Add(rootEmojiAsset);
             }
         }
 
         public static void UnhookTMP(TMP_Text tmp_Text)
         {
-            if (tmp_Text == null || tmp_Text.spriteAsset == null || tmp_Text.spriteAsset.fallbackSpriteAssets == null)
+            if (tmp_Text == null || tmp_Text.spriteAsset == null)
                 return;
-            if (tmp_Text.spriteAsset.fallbackSpriteAssets.Contains(rootEmojiAsset))
+
+            if(tmp_Text.spriteAsset == rootEmojiAsset)
+            {
+                tmp_Text.spriteAsset = null;
+                return;
+            }
+
+            if (tmp_Text.spriteAsset.fallbackSpriteAssets != null && tmp_Text.spriteAsset.fallbackSpriteAssets.Contains(rootEmojiAsset))
                 tmp_Text.spriteAsset.fallbackSpriteAssets.Remove(rootEmojiAsset);
         }
 

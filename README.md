@@ -57,19 +57,10 @@ Please check out example scene for usage (it includes a native emoji, a github e
 That's about it. You should have emoji support out of the box.
 - On the `TMP_EmojiSupport` component, if `Github fallback` is checked, the emojis will be downloaded from github if you are not running on Android or iOS (and if you have network)
 
-If you want to "process" the text to display emojis manually on each change, use:
-```csharp
-textMesh.SetTextEx("TextMesh Pro + EmojiTexture = ❤");
-```
-
 ## Optimizations
 Few pointers to consider:
 
-- `SetTextEx` will link EmojiTexture with `TextMeshPro` or `TextMeshProUGUI` component, scan the text, load emojis, and then apply the text. If you are doing this often, consider the following:
-  - call `TMProEmojiAsset.HookTMP(textMesh)` on start with each text component you want to use with `EmojiTexture`
-  - everytime you want to check if new emojis are being used, call `TMProEmojiAsset.Process(text)` (usually whenever the text changes if it is a user input, or when you know you are displaying an emoji for the first time). Call this before setting the text of the `TextMeshPro` or `TextMeshProUGUI` component to see the changes.
-  - Of course `TMP_EmojiSupport` should take care of all this, but this is just in case you want to be more flexible
-  
+ 
 - Emojis are stored in sprite sheets of the size 4 by 4 (16 emojis) with an emoji texture of `128x128` pixels (which makes a `512x512` per sprite sheet.) These are constants defined in `TMProEmojiAsset.EMOJI_SIZE` and `TMProEmojiAsset.SHEET_TILES`. Optimize these values according to your use case. **BE AWARE** currently, github returns enoji images as `128x128`, and they share the same sprite sheet. Changing these constants will probably break emojis from github. (A resizing method needs to be implemented for that purpose, but that would be at the cost of performance)
 
 - When a sprite sheet is full, a new one is created.
