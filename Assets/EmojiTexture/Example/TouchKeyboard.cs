@@ -42,9 +42,12 @@ namespace iBicha
                     yield break;
                 }
                 keyboard = TouchScreenKeyboard.Open(input);
-                yield return new WaitUntil(() => keyboard.done);
+                yield return new WaitUntil(() => keyboard.status == TouchScreenKeyboard.Status.Canceled ||
+                                                 keyboard.status == TouchScreenKeyboard.Status.Done ||
+                                                 keyboard.status == TouchScreenKeyboard.Status.LostFocus);
                 waitingForInput = true;
-                wasCanceled = keyboard.wasCanceled || keyboard.status == TouchScreenKeyboard.Status.LostFocus;
+                wasCanceled = keyboard.status == TouchScreenKeyboard.Status.Canceled ||
+                              keyboard.status == TouchScreenKeyboard.Status.LostFocus;
                 input = keyboard.text;
             }
 

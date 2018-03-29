@@ -49,7 +49,7 @@ Please check out example scene for usage (it includes a native emoji, a github e
 [TextMesh Pro](https://assetstore.unity.com/packages/essentials/beta-projects/textmesh-pro-84126) already supports emojis as sprites, but they need to be prepared beforehand, which makes it troublesome in terms of build size (and also a lot of manual work), if you want to support as many emojis as possible. This is where EmojiTexture comes in. It generates these sprites on the fly as they are needed.
 
 ## Setup
-- Import TextMesh Pro from the [Asset Store](https://assetstore.unity.com/packages/essentials/beta-projects/textmesh-pro-84126)
+~~- Import TextMesh Pro from the [Asset Store](https://assetstore.unity.com/packages/essentials/beta-projects/textmesh-pro-84126)~~ Use the new **Package Manager** to install TextMesh Pro (this should happen automatically since it is a project dependency)
 - In the Player Settings, add `TMPRO_EMOJIS` to the [Scripting Define Symbols](https://docs.unity3d.com/Manual/PlatformDependentCompilation.html)
 
 ![Scripting Define Symbols](https://docs.unity3d.com/uploads/Main/ScriptDefines.png)
