@@ -10,7 +10,7 @@ namespace iBicha
 
 #if UNITY_IOS && !UNITY_EDITOR
     [DllImport("__Internal")]
-    private static extern void EmojiTexture_render(string text, IntPtr buffer, int width, int height);
+    private static extern int EmojiTexture_render(string text, IntPtr buffer, int width, int height, int sanitize);
 #elif UNITY_ANDROID && !UNITY_EDITOR
     private static AndroidJavaClass _EmojiTextureClass;
     private static AndroidJavaClass EmojiTextureClass {
@@ -128,7 +128,9 @@ namespace iBicha
         {
             //Rendering
 #if UNITY_IOS && !UNITY_EDITOR
-            EmojiTexture_render(text, buffer, texture.width, texture.height);
+            int length = EmojiTexture_render(text, buffer, texture.width, texture.height, SanitizeText ? 1 : 0);
+            if (!string.IsNullOrEmpty(text) && text.Length != length)
+                text = text.Substring(0, length);
 #elif UNITY_ANDROID && !UNITY_EDITOR
             int length = EmojiTextureClass.CallStatic<int>("render", text, jByteBuffer, texture.width, texture.height, SanitizeText);
             if (!string.IsNullOrEmpty(text) && text.Length != length)

@@ -1,6 +1,8 @@
 #import <Foundation/Foundation.h>
+#import <CoreText/CoreText.h>
 
-UILabel * getUILabel() {
+UILabel * getUILabel()
+{
     static UILabel * label = nil;
     if (label == nil)
     {
@@ -16,11 +18,19 @@ UILabel * getUILabel() {
     return label;
 }
 
+NSInteger GetGlyphCount(NSMutableAttributedString *attributedString)
+{
+    CTLineRef line = CTLineCreateWithAttributedString((CFAttributedStringRef)attributedString);
+    NSInteger count = CTLineGetGlyphCount(line);
+    CFRelease(line);
+    return count;
+}
+
 extern "C" {
-        
+    
     int EmojiTexture_render(const char* text, unsigned char * buffer , int width, int height, int sanitize)
     {
-        NSUInteger textLength = 0;
+        int textLength = 0;
         NSUInteger bytesPerPixel = 4;
         NSUInteger bytesPerRow = bytesPerPixel * width;
         NSUInteger bitsPerComponent = 8;
@@ -32,18 +42,19 @@ extern "C" {
         if(text){
             UILabel * label = getUILabel();
             [label setFrame:CGRectMake(0,0,width,height)];
-            label.text = [NSString stringWithUTF8String: text];
-
-            //TODO: get bounds
-            CGSize textSize = [label.text sizeWithAttributes:@{NSFontAttributeName:[label font]}];
+            
+            NSMutableAttributedString *attributedString =
+            [[NSMutableAttributedString alloc] initWithString:[NSString stringWithUTF8String: text]];
+            
             if(sanitize){
-                for (int i = label.text.length; i > 1; i--)
-                {
-
+                while (GetGlyphCount(attributedString) > 1) {
+                    [attributedString deleteCharactersInRange:NSMakeRange([attributedString length]-1, 1)];
                 }
             }
             
-            textLength = yourOutletName.text.length;
+            textLength = (int)[attributedString length];
+            label.attributedText = attributedString;
+            
             [label.layer renderInContext:context];
         }
         CGColorSpaceRelease(colorSpace);
