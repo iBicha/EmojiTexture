@@ -18,7 +18,6 @@ namespace iBicha.TMPro
         private static TMP_SpriteAsset currentEmojiAsset;
         private static int currentEmojiIndex;
 
-        private static bool canCopyTextures;
         private static bool textureNeedsApply;
         private static EmojiTexture emojiTexture;
 
@@ -31,8 +30,6 @@ namespace iBicha.TMPro
 
             if (rootEmojiAsset == null)
             {
-                canCopyTextures = SystemInfo.copyTextureSupport != UnityEngine.Rendering.CopyTextureSupport.None;
-
                 rootEmojiAsset = CreateTMP_SpriteAsset();
                 currentEmojiAsset = rootEmojiAsset;
                 currentEmojiIndex = 0;
@@ -177,7 +174,7 @@ namespace iBicha.TMPro
         private static TMP_SpriteAsset CreateTMP_SpriteAsset()
         {
             var texture = new Texture2D(SHEET_SIZE, SHEET_SIZE, TextureFormat.RGBA32, false);
-            if (canCopyTextures)
+            if (EmojiTexture.CanCopyTextures)
             {
                 //If we can copy textures on the GPU, we make it
                 //non readable to free up the RAM copy
@@ -206,7 +203,7 @@ namespace iBicha.TMPro
             int row = currentEmojiIndex % SHEET_TILES;
             int column = currentEmojiIndex / SHEET_TILES;
 
-            if (canCopyTextures)
+            if (EmojiTexture.CanCopyTextures)
             {
                 Graphics.CopyTexture(emojiTex, 0, 0, 0, 0, EMOJI_SIZE, EMOJI_SIZE,
                                      currentEmojiAsset.spriteSheet, 0, 0, row * EMOJI_SIZE,

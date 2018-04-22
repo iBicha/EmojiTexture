@@ -9,6 +9,7 @@ import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 
 import java.nio.ByteBuffer;
@@ -22,6 +23,19 @@ public class EmojiTexture {
     private static final int DEFAULT_MIN_TEXT_SIZE = 8;
     private static final int DEFAULT_MAX_TEXT_SIZE = 999;
     private static final float DEFAULT_PRECISION = 0.5f;
+
+
+    static {
+        Log.d("EmojiTexture", "static initializer: emojiTextureHelper");
+        System.loadLibrary("emojiTextureHelper");
+    }
+
+    static long jGetTextureUpdateCallback(){
+        Log.d("EmojiTexture", "jGetTextureUpdateCallback: " + GetTextureUpdateCallback());
+        return GetTextureUpdateCallback();
+    }
+
+    public static native long GetTextureUpdateCallback();
 
     static int render(String text, ByteBuffer byteBuffer, int width, int height, boolean sanitize){
         TextPaint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
@@ -122,4 +136,5 @@ public class EmojiTexture {
             }
         }
     }
+
 }

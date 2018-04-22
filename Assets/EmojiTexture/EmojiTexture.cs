@@ -1,26 +1,64 @@
+#if UNITY_2017_2_OR_NEWER
+//#define ENABLE_CUSTOM_TEXTURE_UPDATE
+#endif
+
 using System;
 using System.Collections;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace iBicha
 {
     public class EmojiTexture
-    {
+    {        
+        public static bool CanCopyTextures
+        {
+            get
+            {
+                return SystemInfo.copyTextureSupport != UnityEngine.Rendering.CopyTextureSupport.None;
+            }
+        }
 
 #if UNITY_IOS && !UNITY_EDITOR
-    [DllImport("__Internal")]
-    private static extern int EmojiTexture_render(string text, IntPtr buffer, int width, int height, int sanitize);
+        [DllImport("__Internal")]
+        private static extern int EmojiTexture_render(string text, IntPtr buffer, int width, int height, int sanitize);
+
+        [DllImport("__Internal")]
+        private static extern IntPtr EmojiTexture_GetTextureUpdateCallback();
+
 #elif UNITY_ANDROID && !UNITY_EDITOR
-    private static AndroidJavaClass _EmojiTextureClass;
-    private static AndroidJavaClass EmojiTextureClass {
-        get {
-            if(_EmojiTextureClass == null){
-                _EmojiTextureClass = new AndroidJavaClass("com.ibicha.emojitexture.EmojiTexture");
+        private static AndroidJavaClass _EmojiTextureClass;
+        private static AndroidJavaClass EmojiTextureClass {
+            get {
+                if(_EmojiTextureClass == null){
+                    _EmojiTextureClass = new AndroidJavaClass("com.ibicha.emojitexture.EmojiTexture");
+                }
+                return _EmojiTextureClass;
             }
-            return _EmojiTextureClass;
         }
-    }
+#endif
+        
+#if ENABLE_CUSTOM_TEXTURE_UPDATE
+        private static IntPtr textureUpdateCallback = IntPtr.Zero;
+        private static IntPtr TextureUpdateCallback
+        {
+            get
+            {
+#if UNITY_ANDROID && !UNITY_EDITOR
+                if (textureUpdateCallback == IntPtr.Zero)
+                {
+                    textureUpdateCallback = new IntPtr(EmojiTextureClass.CallStatic<long>("jGetTextureUpdateCallback"));
+                }
+#elif UNITY_IOS && !UNITY_EDITOR
+                if (textureUpdateCallback == IntPtr.Zero)
+                {
+                    textureUpdateCallback = EmojiTexture_GetTextureUpdateCallback();
+                }
+#endif
+                return textureUpdateCallback;
+            }
+        }
 #endif
 
         /// <summary>
@@ -139,8 +177,22 @@ namespace iBicha
             //Copy pixels to texture
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             isByteBufferDirty = true;
-            texture.LoadRawTextureData(buffer, bufferSize);
-            texture.Apply();
+
+#if ENABLE_CUSTOM_TEXTURE_UPDATE
+            if (CanCopyTextures && TextureUpdateCallback != IntPtr.Zero)
+            {
+                commandBuffer.IssuePluginCustomTextureUpdate(
+                    TextureUpdateCallback, texture, (uint)(buffer)
+                );
+                Graphics.ExecuteCommandBuffer(commandBuffer);
+                commandBuffer.Clear();
+            }
+            else
+#endif
+            {
+                texture.LoadRawTextureData(buffer, bufferSize);
+                texture.Apply();
+            }
 #endif
         }
 
@@ -154,6 +206,8 @@ namespace iBicha
         private byte[] byteBuffer;
         private bool isByteBufferDirty;
 
+        private CommandBuffer commandBuffer;
+        
         public EmojiTexture() : this(null) { }
 
         public EmojiTexture(string text) : this(text, 256, 256) { }
@@ -169,19 +223,28 @@ namespace iBicha
             width = Mathf.Clamp(width, 8, 256);
             height = Mathf.Clamp(height, 8, 256);
             texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            
+            //Making the texture read only
+#if ENABLE_CUSTOM_TEXTURE_UPDATE
+            if (CanCopyTextures && TextureUpdateCallback != IntPtr.Zero)
+            {
+                texture.Apply(false, true);
+                commandBuffer = new CommandBuffer();
+            }
+#endif
 
             bufferSize = 0;
             buffer = IntPtr.Zero;
             byteBuffer = null;
             isByteBufferDirty = false;
             sanitizeText = true;
-
+            
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
         bufferSize = width * height * 4;
         buffer = Marshal.AllocHGlobal(bufferSize);
 #endif
 #if UNITY_ANDROID && !UNITY_EDITOR
-        jByteBuffer = new AndroidJavaObject("java.nio.DirectByteBuffer", buffer.ToInt64(), bufferSize);
+            jByteBuffer = new AndroidJavaObject("java.nio.DirectByteBuffer", buffer.ToInt64(), bufferSize);
 #endif
 
             Text = text;
@@ -190,8 +253,14 @@ namespace iBicha
         ~EmojiTexture()
         {
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
-        if(buffer != IntPtr.Zero)
-            Marshal.FreeHGlobal(buffer);
+            if(buffer != IntPtr.Zero)
+                Marshal.FreeHGlobal(buffer);
+#endif
+#if ENABLE_CUSTOM_TEXTURE_UPDATE
+            if (CanCopyTextures && TextureUpdateCallback != IntPtr.Zero)
+            {
+                commandBuffer.Dispose();
+            }
 #endif
         }
 

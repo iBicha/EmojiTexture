@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <CoreText/CoreText.h>
+#include "IUnityRenderingExtensions.h"
 
 UILabel * getUILabel()
 {
@@ -27,7 +28,6 @@ NSInteger GetGlyphCount(NSMutableAttributedString *attributedString)
 }
 
 extern "C" {
-    
     int EmojiTexture_render(const char* text, unsigned char * buffer , int width, int height, int sanitize)
     {
         int textLength = 0;
@@ -63,3 +63,25 @@ extern "C" {
     }
 }
 
+void TextureUpdateCallback(int eventID, void* data)
+{
+    auto event = static_cast<UnityRenderingExtEventType>(eventID);
+    
+    if (event == kUnityRenderingExtEventUpdateTextureBegin)
+    {
+        // UpdateTextureBegin: Generate and return texture image data.
+        auto params = reinterpret_cast<UnityRenderingExtTextureUpdateParams*>(data);
+        params->texData = reinterpret_cast<void*>(params->userData);
+    }
+    else if (event == kUnityRenderingExtEventUpdateTextureEnd)
+    {
+        // UpdateTextureEnd: Free up the temporary memory.
+        //auto params = reinterpret_cast<UnityRenderingExtTextureUpdateParams*>(data);
+        //delete[] reinterpret_cast<uint32_t*>(params->texData);
+    }
+}
+
+extern "C" UnityRenderingEventAndData UNITY_INTERFACE_EXPORT EmojiTexture_GetTextureUpdateCallback()
+{
+    return TextureUpdateCallback;
+}
