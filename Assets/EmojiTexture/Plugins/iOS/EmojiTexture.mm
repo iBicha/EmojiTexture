@@ -63,6 +63,9 @@ extern "C" {
     }
 }
 
+typedef void* (*BUFFER_BY_INDEX_DELEGATE)(int index);
+static BUFFER_BY_INDEX_DELEGATE s_getBufferByIndex;
+
 void TextureUpdateCallback(int eventID, void* data)
 {
     auto event = static_cast<UnityRenderingExtEventType>(eventID);
@@ -71,17 +74,23 @@ void TextureUpdateCallback(int eventID, void* data)
     {
         // UpdateTextureBegin: Generate and return texture image data.
         auto params = reinterpret_cast<UnityRenderingExtTextureUpdateParams*>(data);
-        params->texData = reinterpret_cast<void*>(params->userData);
-    }
-    else if (event == kUnityRenderingExtEventUpdateTextureEnd)
-    {
-        // UpdateTextureEnd: Free up the temporary memory.
-        //auto params = reinterpret_cast<UnityRenderingExtTextureUpdateParams*>(data);
-        //delete[] reinterpret_cast<uint32_t*>(params->texData);
+        
+        if (s_getBufferByIndex == NULL)
+            return;
+
+        void* texData = s_getBufferByIndex((int)params->userData);
+        params->texData = texData;
     }
 }
 
-extern "C" UnityRenderingEventAndData UNITY_INTERFACE_EXPORT EmojiTexture_GetTextureUpdateCallback()
+extern "C" UnityRenderingEventAndData UNITY_INTERFACE_EXPORT
+EmojiTexture_GetTextureUpdateCallback()
 {
     return TextureUpdateCallback;
+}
+
+extern "C" void UNITY_INTERFACE_EXPORT
+EmojiTexture_SetBufferRefByIndexFunction(BUFFER_BY_INDEX_DELEGATE fn)
+{
+    s_getBufferByIndex = fn;
 }

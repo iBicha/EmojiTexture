@@ -4,14 +4,31 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using AOT;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace iBicha
 {
+       
+    
     public class EmojiTexture
-    {        
+    {
+        private static List<IntPtr> bufferRef = new List<IntPtr>();
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private delegate IntPtr GetBufferPointerByIndexDelegate(int index);
+        
+        [MonoPInvokeCallback (typeof(GetBufferPointerByIndexDelegate))]
+        private static IntPtr GetBufferPointerByIndex(int index)
+        {
+            if(index < bufferRef.Count)
+                return bufferRef[index];
+            return IntPtr.Zero;
+        }
+        
         public static bool CanCopyTextures
         {
             get
@@ -27,6 +44,9 @@ namespace iBicha
         [DllImport("__Internal")]
         private static extern IntPtr EmojiTexture_GetTextureUpdateCallback();
 
+        [DllImport("__Internal")]
+        private static extern void EmojiTexture_SetBufferRefByIndexFunction(GetBufferPointerByIndexDelegate fn);
+
 #elif UNITY_ANDROID && !UNITY_EDITOR
         private static AndroidJavaClass _EmojiTextureClass;
         private static AndroidJavaClass EmojiTextureClass {
@@ -37,6 +57,10 @@ namespace iBicha
                 return _EmojiTextureClass;
             }
         }
+    
+        [DllImport("emojiTextureHelper")]
+        private static extern void EmojiTexture_SetBufferRefByIndexFunction(GetBufferPointerByIndexDelegate fn);
+
 #endif
         
 #if ENABLE_CUSTOM_TEXTURE_UPDATE
@@ -49,11 +73,13 @@ namespace iBicha
                 if (textureUpdateCallback == IntPtr.Zero)
                 {
                     textureUpdateCallback = new IntPtr(EmojiTextureClass.CallStatic<long>("jGetTextureUpdateCallback"));
+                    EmojiTexture_SetBufferRefByIndexFunction(GetBufferPointerByIndex);
                 }
 #elif UNITY_IOS && !UNITY_EDITOR
                 if (textureUpdateCallback == IntPtr.Zero)
                 {
                     textureUpdateCallback = EmojiTexture_GetTextureUpdateCallback();
+                    EmojiTexture_SetBufferRefByIndexFunction(GetBufferPointerByIndex);
                 }
 #endif
                 return textureUpdateCallback;
@@ -182,8 +208,9 @@ namespace iBicha
             if (CanCopyTextures && TextureUpdateCallback != IntPtr.Zero)
             {
                 commandBuffer.IssuePluginCustomTextureUpdate(
-                    TextureUpdateCallback, texture, (uint)(buffer)
+                    TextureUpdateCallback, texture, (uint)(bufferRef.IndexOf(buffer))
                 );
+                Debug.Log("CustomTextureUpdate");
                 Graphics.ExecuteCommandBuffer(commandBuffer);
                 commandBuffer.Clear();
             }
@@ -240,8 +267,9 @@ namespace iBicha
             sanitizeText = true;
             
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
-        bufferSize = width * height * 4;
-        buffer = Marshal.AllocHGlobal(bufferSize);
+            bufferSize = width * height * 4;
+            buffer = Marshal.AllocHGlobal(bufferSize);
+            bufferRef.Add(buffer);
 #endif
 #if UNITY_ANDROID && !UNITY_EDITOR
             jByteBuffer = new AndroidJavaObject("java.nio.DirectByteBuffer", buffer.ToInt64(), bufferSize);
@@ -254,7 +282,10 @@ namespace iBicha
         {
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             if(buffer != IntPtr.Zero)
+            {
+                bufferRef.Remove(buffer);
                 Marshal.FreeHGlobal(buffer);
+            }
 #endif
 #if ENABLE_CUSTOM_TEXTURE_UPDATE
             if (CanCopyTextures && TextureUpdateCallback != IntPtr.Zero)
