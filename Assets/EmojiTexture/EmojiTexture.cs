@@ -287,15 +287,13 @@ namespace iBicha
                 Marshal.FreeHGlobal(buffer);
             }
 #endif
-#if ENABLE_CUSTOM_TEXTURE_UPDATE
-            if (CanCopyTextures && TextureUpdateCallback != IntPtr.Zero)
+            if (commandBuffer != null)
             {
                 commandBuffer.Dispose();
             }
-#endif
         }
 
-        static public implicit operator Texture2D(EmojiTexture emojiTexture)
+        public static implicit operator Texture2D(EmojiTexture emojiTexture)
         {
             return emojiTexture == null ? null : emojiTexture.texture;
         }
