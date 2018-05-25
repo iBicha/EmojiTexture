@@ -56,6 +56,9 @@ namespace iBicha
         [DllImport("emojiTextureHelper")]
         private static extern void EmojiTexture_SetBufferRefByIndexFunction(GetBufferPointerByIndexDelegate fn);
 
+#elif UNITY_WEBGL && !UNITY_EDITOR
+        [DllImport("__Internal")]
+        private static extern int EmojiTexture_render(string text, IntPtr buffer, int width, int height, int sanitize);
 #endif
 
 #if ENABLE_CUSTOM_TEXTURE_UPDATE
@@ -189,9 +192,13 @@ namespace iBicha
  EmojiTextureClass.CallStatic<int>("render", text, jByteBuffer, texture.width, texture.height, SanitizeText);
             if (!string.IsNullOrEmpty(text) && text.Length != length)
                 text = text.Substring(0, length);
+#elif UNITY_WEBGL && !UNITY_EDITOR
+            int length = EmojiTexture_render(text, buffer, texture.width, texture.height, SanitizeText ? 1 : 0);
+            if (!string.IsNullOrEmpty(text) && text.Length != length)
+                text = text.Substring(0, length);
 #endif
             //Copy pixels to texture
-#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+#if (UNITY_IOS || UNITY_ANDROID || UNITY_WEBGL) && !UNITY_EDITOR
             isByteBufferDirty = true;
 
 #if ENABLE_CUSTOM_TEXTURE_UPDATE
@@ -266,7 +273,7 @@ namespace iBicha
             isByteBufferDirty = false;
             sanitizeText = true;
 
-#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+#if (UNITY_IOS || UNITY_ANDROID || UNITY_WEBGL) && !UNITY_EDITOR
             bufferSize = width * height * 4;
             buffer = Marshal.AllocHGlobal(bufferSize);
             bufferRef.Add(buffer);
