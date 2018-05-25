@@ -2,29 +2,8 @@ const EmojiTexturePrefix = "EmojiTexture_";
 
 var EmojiTextureHelper = {
 	canvas: null,
-    ToCsString: function (str) 
-    {
-        if (typeof str === 'object') {
-            str = JSON.stringify(str);
-        }
-        var bufferLength = lengthBytesUTF8(str) + 1;
-        var buffer = _malloc(bufferLength);
-        stringToUTF8(str, buffer, bufferLength);
-        return buffer;
-    },
 	ToJsString : function (ptr) {
 		return Pointer_stringify(ptr);
-	},
-	ToJsObject : function (ptr) {
-		var str = Pointer_stringify(ptr);
-		try {
-			return JSON.parse(str);
-		} catch (e) {
-			return null;
-		}
-	},
-	FreeMemory : function (ptr) {
-		_free(ptr);
 	}
 };
 
@@ -59,6 +38,7 @@ var EmojiTexturePlugin = {
 		var imageData = ctx.getImageData(0, 0, width, height);
 		writeArrayToMemory(imageData.data, buffer);
 
+		//TODO: handle 'sanitize'
 		return emojiText.length;
 	}
 };
