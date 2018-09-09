@@ -32,6 +32,6 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
-iOS
+/iOS
 Assets/TextMesh Pro
 TextMesh Pro.meta
