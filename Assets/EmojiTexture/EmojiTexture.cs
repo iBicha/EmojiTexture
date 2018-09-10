@@ -133,7 +133,7 @@ namespace iBicha
                     return 0;
                 if (text.Length == 1)
                     return text[0];
-                return char.ConvertToUtf32(text[0], text[1]);
+                return char.ConvertToUtf32(text, 0);
             }
             set { Text = char.ConvertFromUtf32(value); }
         }
