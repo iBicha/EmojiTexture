@@ -174,6 +174,14 @@ namespace iBicha.TMPro
         private static TMP_SpriteAsset CreateTMP_SpriteAsset()
         {
             var texture = new Texture2D(SHEET_SIZE, SHEET_SIZE, TextureFormat.RGBA32, false);
+
+            // Fill texture with transparent pixels
+            for (int x = 0; x < SHEET_SIZE; x++) {
+                for (int y = 0; y < SHEET_SIZE; y++) {
+                    texture.SetPixel(x, y, new Color(0, 0, 0, 0));
+                }
+            }
+
             if (EmojiTexture.CanCopyTextures)
             {
                 //If we can copy textures on the GPU, we make it
