@@ -12,6 +12,7 @@ namespace iBicha.TMPro
 
         private TMP_Text textComponent;
         private string lastProcessedText = "";
+
         private void Awake()
         {
             textComponent = GetComponent<TMP_Text>();
@@ -30,42 +31,16 @@ namespace iBicha.TMPro
 
         void OnTextChange(object obj)
         {
-            TMP_Text tmp_Text = (TMP_Text)obj;
+            TMP_Text tmp_Text = (TMP_Text) obj;
             if (tmp_Text == textComponent && lastProcessedText != textComponent.text)
             {
                 var text = textComponent.text;
                 lastProcessedText = text;
 
-#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
-                bool spriteSheetUpdated = TMProEmojiAsset.Process(text);
-
-                if(spriteSheetUpdated){
-                    StartCoroutine(ApplyChangesNextFrame());
-                }
-#else
-                if(githubFallback){
-                    StartCoroutine(ProcessAsync(text));
-                }
-#endif
+                TMProEmojiAsset.Process(tmp_Text, text);
             }
         }
-
-        IEnumerator ProcessAsync(string text)
-        {
-            yield return TMProEmojiAsset.ProcessAsync(text);
-            if(TMProEmojiAsset.didProcessAsync){
-                yield return ApplyChangesNextFrame();
-            }
-        }
-
-        IEnumerator ApplyChangesNextFrame()
-        {
-            yield return new WaitForEndOfFrame();
-            textComponent.havePropertiesChanged = true;
-        }
-
     }
-
 }
 
 #else

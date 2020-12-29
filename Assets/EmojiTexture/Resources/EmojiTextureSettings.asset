@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec6ddf844946a4b0b86a66884a0f031c, type: 3}
+  m_Name: EmojiTextureSettings
+  m_EditorClassIdentifier: 
+  UseGPUTextureCopy: 1
+  EmojiSizeInPixels: 128
+  SheetTiles: 4
+  githubEmojisJson: {fileID: 4900000, guid: 5a1d51f2982334146b1d5db8bf8fc084, type: 3}
+  jsonTest: {fileID: 4900000, guid: f5e44ffde7d9e480a8f8464010ffebc2, type: 3}

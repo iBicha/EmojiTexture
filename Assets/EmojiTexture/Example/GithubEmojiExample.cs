@@ -16,10 +16,15 @@ namespace iBicha
         //Emoji list to shuffle from
         private string[] githubEmojis = { ":blush:", ":heart:", ":eggplant:", ":peach:" };
 
-        void Start()
+        IEnumerator Start()
         {
+            yield return GithubEmojiProvider.Initialize();
+            
             emojiTexture = new EmojiTexture();
+            emojiTexture.SanitizeText = false;
+            
             material.mainTexture = emojiTexture;
+            
             StartCoroutine(ChangeGithubEmoji());
         }
 
@@ -51,7 +56,8 @@ namespace iBicha
 
         IEnumerator SetEmoji(string text)
         {
-            yield return emojiTexture.SetGithubEmoji(text);
+            emojiTexture.Text = text;
+            yield return null;
         }
 
     }

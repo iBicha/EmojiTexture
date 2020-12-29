@@ -33,5 +33,10 @@ sysinfo.txt
 *.apk
 *.unitypackage
 /iOS
-Assets/TextMesh Pro
+/WebGL
+/Assets/TextMesh Pro
 TextMesh Pro.meta
+.idea
+/Assets/Plugins/Editor/JetBrains
+/Assets/Plugins/Editor/JetBrains.meta
+Assets/EmojiTexture/Plugins/OSX/source~/EmojiTexture/EmojiTexture.xcodeproj/project.xcworkspace/xcuserdata
