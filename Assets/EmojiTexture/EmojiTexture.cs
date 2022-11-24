@@ -273,16 +273,23 @@ namespace iBicha
             isByteBufferDirty = false;
             sanitizeText = true;
 
-#if (UNITY_IOS || UNITY_ANDROID || UNITY_WEBGL) && !UNITY_EDITOR
-            bufferSize = width * height * 4;
-            buffer = Marshal.AllocHGlobal(bufferSize);
-            bufferRef.Add(buffer);
-#endif
-#if UNITY_ANDROID && !UNITY_EDITOR
-            jByteBuffer = new AndroidJavaObject("java.nio.DirectByteBuffer", buffer.ToInt64(), bufferSize);
+#if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR && !UNITY_ANDROID
+			bufferSize = width * height * 4;
+			buffer = Marshal.AllocHGlobal(bufferSize);
+			bufferRef.Add(buffer);
 #endif
 
-            Text = text;
+#if UNITY_ANDROID && !UNITY_EDITOR
+			bufferSize = width * height * 4;
+			var byteClass = new AndroidJavaClass("java.nio.ByteBuffer");
+			AndroidJavaObject directBuffer = byteClass.CallStatic<AndroidJavaObject>("allocateDirect", bufferSize);
+			long address = directBuffer.Get<long>("address");
+			buffer = new IntPtr(address);
+			bufferRef.Add(buffer);
+			jByteBuffer = directBuffer;
+#endif
+
+			Text = text;
         }
 
         ~EmojiTexture()
