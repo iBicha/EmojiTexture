@@ -1,4 +1,6 @@
 # EmojiTexture
+##### :warning: Unity now supports [Emojis using TextMesh Pro](https://docs.unity3d.com/Packages/com.unity.textmeshpro@3.2/manual/ColorEmojis.html). Please use that package instead, since this project hasn't been updated for a while. 
+
 A Unity plugin to render Emojis ☺ ❤ 🍆 🍑 to a texture. Currently for iOS and Android only.
 
 Please note that the editor is not supported. It will only render on device (should work on simulator as well)
